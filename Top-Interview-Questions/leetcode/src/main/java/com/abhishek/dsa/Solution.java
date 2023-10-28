@@ -23,4 +23,25 @@ public class Solution {
         return i;
     }
 
+    //26. Remove Duplicates from Sorted Array
+    public int removeDuplicates(int[] nums) {
+        int n = nums.length;
+        int i = 0, j = 1, k = 2;
+        if(n == 1) return 1;
+        while(i < n){
+            if(j == n) break;
+            if(nums[j] <= nums[i]){
+                while(k < n && nums[k] <= nums[i]) k++;
+                if(k==n){
+                    break;
+                }
+                int temp = nums[j];
+                nums[j] = nums[k];
+                nums[k] = temp;
+            }
+            i++;
+            j++;
+        }
+        return i+1;
+    }
 }

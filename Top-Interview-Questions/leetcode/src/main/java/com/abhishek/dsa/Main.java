@@ -7,7 +7,7 @@ public class Main {
 
         Solution solution = new Solution();
 
-        System.out.println(solution.removeElement(new int[]{3,3}, 2));
+        System.out.println(solution.removeDuplicates(new int[]{1,1,2}));
 
     }
 }
