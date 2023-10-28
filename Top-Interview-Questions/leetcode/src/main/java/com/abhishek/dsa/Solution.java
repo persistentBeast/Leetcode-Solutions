@@ -44,4 +44,35 @@ public class Solution {
         }
         return i+1;
     }
+
+    //80. Remove Duplicates from Sorted Array II
+    public int removeDuplicates2(int[] nums) {
+        int n = nums.length;
+        int i = 0, j = 1, k = 2, l = 3;
+        if(n == 1 | n == 2) return n;
+        while(i < n - 1){
+            if(k == n) break;
+            if(!removeDuplicates2Helper(nums[i], nums[j], nums[k])){
+                while(l < n && !removeDuplicates2Helper(nums[i], nums[j], nums[l])) l++;
+                if(l==n){
+                    break;
+                }
+                int temp = nums[k];
+                nums[k] = nums[l];
+                nums[l] = temp;
+            }
+            i++;
+            j++;
+            k++;
+        }
+        return i+2;
+    }
+
+    private boolean removeDuplicates2Helper(int a, int b, int c){
+
+        return (a < b && b < c) || (a <= b && b < c) | (a < b && b <= c);
+
+    }
+
+    
 }
