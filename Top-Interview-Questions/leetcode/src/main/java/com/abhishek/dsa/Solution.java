@@ -1,4 +1,8 @@
 package main.java.com.abhishek.dsa;
+
+import java.util.BitSet;
+import java.util.function.BinaryOperator;
+
 public class Solution {
     
 
@@ -74,5 +78,44 @@ public class Solution {
 
     }
 
-    
+    //121. Best Time to Buy and Sell Stock
+    public int maxProfit(int[] prices) {
+
+        int n  = prices.length;
+        int min_stock = 1000000;
+        int max_profit = 0;
+
+        for(int i = 0; i < n; i++){
+            if(prices[i] < min_stock){
+                min_stock = prices[i];
+            }else{
+                max_profit = Math.max(max_profit, prices[i] - min_stock);
+            }
+
+        }
+
+        return max_profit;
+        
+    }
+
+    //122. Best Time to Buy and Sell Stock II
+    public int maxProfit2(int[] nums) {
+
+        int n = nums.length;
+        int ans = 0,st = 0;
+
+        for(int i = 1; i < n ; i++){
+
+            if(nums[i] < nums[i-1]){
+                ans += nums[i-1] - nums[st];
+                st = i;
+            }
+
+        }
+
+        ans += nums[n-1] - nums[st];
+
+        return ans;
+        
+    }
 }
