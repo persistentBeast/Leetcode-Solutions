@@ -290,4 +290,76 @@ public class Solution {
         return dp[days[n - 1]];
     }
 
+    int mod = 1000000007;
+
+    public long checkRecordHelper(int n, int contCount, int absentCount, Map<String, Long> dp) {
+        if (n == 1) {
+            if (absentCount == 1 && contCount == 2) return 1;
+            else if (absentCount == 1 || contCount == 2) return 2;
+            else return 3;
+        }
+
+        if (dp.containsKey(String.valueOf(n) + contCount + absentCount))
+            return dp.get(String.valueOf(n) + contCount + absentCount);
+
+        long currAns = 0;
+        if (absentCount == 1 && contCount == 2) {
+            long c1 = checkRecordHelper(n - 1, 0, absentCount, dp);
+            currAns += ((c1 % mod)) % mod;
+        } else if (absentCount == 1) {
+            long c1 = checkRecordHelper(n - 1, contCount + 1, absentCount, dp);
+            long c2 = checkRecordHelper(n - 1, 0, absentCount, dp);
+            currAns += ((c1 % mod) + (c2 % mod)) % mod;
+        } else if (contCount == 2) {
+            long c1 = checkRecordHelper(n - 1, 0, absentCount + 1, dp);
+            long c2 = checkRecordHelper(n - 1, 0, absentCount, dp);
+            currAns += ((c1 % mod) + (c2 % mod)) % mod;
+        } else {
+            long c1 = checkRecordHelper(n - 1, contCount + 1, absentCount, dp);
+            long c2 = checkRecordHelper(n - 1, 0, absentCount + 1, dp);
+            long c3 = checkRecordHelper(n - 1, 0, absentCount, dp);
+            currAns += ((c1 % mod) + (c2 % mod) + (c3 % mod)) % mod;
+        }
+
+        dp.put(String.valueOf(n) + contCount + absentCount, currAns);
+        return currAns;
+    }
+
+    // 552. Student Attendance Record II - Using Memoization
+    public int checkRecord(int n) {
+        Map<String, Long> dp = new HashMap<>();
+        return (int) (checkRecordHelper(n, 0, 0, dp) % mod);
+    }
+
+
+    //absent = 0, 1 | cont = 0,1,2
+
+    //552. Student Attendance Record II - Using Iteration
+    public int checkRecord2(int n) {
+        if (n == 1) return 3;
+        long[][][] dp = new long[n + 1][2][3];
+        dp[1][1][2] = 1;
+        dp[1][1][0] = 2;
+        dp[1][1][1] = 2;
+        dp[1][0][2] = 2;
+        dp[1][0][0] = 3;
+        dp[1][0][1] = 3;
+        for (int i = 2; i <= n; i++) {
+            for (int j = 0; j < 2; j++) {
+                for (int k = 0; k < 3; k++) {
+                    if (j == 1 && k == 2) {
+                        dp[i][j][k] = dp[i - 1][1][0];
+                    } else if (j == 1) {
+                        dp[i][j][k] = (dp[i - 1][j][k + 1] % mod + dp[i - 1][j][0] % mod) % mod;
+                    } else if (k == 2) {
+                        dp[i][j][k] = (dp[i - 1][j + 1][0] % mod + dp[i - 1][j][0] % mod) % mod;
+                    } else {
+                        dp[i][j][k] = (dp[i - 1][j][k + 1] % mod + dp[i - 1][j + 1][0] % mod + dp[i - 1][j][0] % mod) % mod;
+                    }
+                }
+            }
+        }
+        return (int) (dp[n][0][0]);
+    }
+
 }
