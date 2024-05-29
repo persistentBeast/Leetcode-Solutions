@@ -362,4 +362,56 @@ public class Solution {
         return (int) (dp[n][0][0]);
     }
 
+    //1208. Get Equal Substrings Within Budget
+    public int equalSubstring(String s, String t, int maxCost) {
+
+        int ans = 0, currCost = 0, n = s.length(), st = 0, end = 0;
+
+        while(end < n){
+            currCost += Math.abs(s.charAt(end) - t.charAt(end));
+            while(currCost > maxCost && st <= end){
+                currCost -= Math.abs(s.charAt(st) - t.charAt(st));
+                st++;
+            }
+            ans = Math.max(ans, end - st + 1);
+            end++;
+        }
+
+        return ans;
+    }
+
+    //2419. Longest Subarray With Maximum Bitwise AND
+    public int longestSubarray(int[] nums) {
+
+        int n = nums.length, ans = 0;
+
+        int maxNum = Arrays.stream(nums).max().getAsInt();
+
+        int st = 0, end = 0;
+
+        while(end < n){
+            int curr = nums[end];
+            boolean valid = true;
+            int temp = maxNum;
+            while(temp != 0){
+                if((temp & (1)) == 1){
+                    if((curr & 1) == 0){
+                        valid = false;
+                        break;
+                    }
+                }
+                temp = (temp >> 1);
+                curr = (curr >> 1);
+            }
+            if(!valid){
+                st = end;
+            }
+            ans = Math.max(ans, end - st + 1);
+            end++;
+        }
+
+        return ans;
+
+    }
+
 }
