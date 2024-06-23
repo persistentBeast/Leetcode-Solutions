@@ -414,4 +414,139 @@ public class Solution {
 
     }
 
+    //2486. Append Characters to String to Make Subsequence
+    public int appendCharacters(String s, String t) {
+        int n = s.length(), m = t.length();
+        int j = 0;
+        for(int i = 0; i < n ; i++){
+            if(j < m && s.charAt(i) == t.charAt(j)){
+                j++;
+            }
+        }
+        return m - j;
+    }
+
+    //945. Minimum Increment to Make Array Unique
+    public int minIncrementForUnique(int[] nums) {
+
+        Arrays.sort(nums);
+        int ans = 0, n = nums.length;
+        for(int i = 1; i < n; i++){
+            if(nums[i] <= nums[i-1]){
+                int incr_by = Math.abs(nums[i] - nums[i-1]) + 1;
+                nums[i] = nums[i] + incr_by;
+                ans += incr_by;
+            }
+        }
+        return ans;
+
+    }
+
+    private static class Work{
+        int mc;
+        int profit;
+        int diff;
+
+        public Work(int mc, int profit) {
+            this.mc = mc;
+            this.profit = profit;
+        }
+
+        public Work(int profit, int diff, int mc) {
+            this.profit = profit;
+            this.diff = diff;
+        }
+    }
+
+  // 502. IPO
+  public int findMaximizedCapital(int k, int w, int[] profits, int[] capital) {
+        int n = profits.length;
+        PriorityQueue<Work> pq = new PriorityQueue<>(new Comparator<Work>() {
+            @Override
+            public int compare(Work o1, Work o2) {
+                return -1*Integer.compare(o1.profit,o2.profit);
+            }
+        });
+        for(int i = 0; i < n; i++){
+            Work work = new Work(capital[i], profits[i]);
+            pq.add(work);
+        }
+        while (k > 0 && !pq.isEmpty()){
+            Stack<Work> temp_stack = new Stack<>();
+            while(!pq.isEmpty() && pq.peek().mc > w){
+                Work work_temp = pq.poll();
+                temp_stack.add(work_temp);
+            }
+            if(!pq.isEmpty()){
+                Work best_doable_work = pq.poll();
+                w += best_doable_work.profit;
+                k--;
+            }else{
+                break;
+            }
+            while(!temp_stack.isEmpty()){
+                Work temp_work2 = temp_stack.pop();
+                pq.add(temp_work2);
+            }
+        }
+        return w;
+  }
+
+  int bs(int[] arr, int n, int k){
+
+        int st = 0, end = n - 1, mid;
+        int ans = -1;
+
+        while(st <= end){
+            mid = (st + end)/2;
+            if(arr[mid] <= k){
+                ans = mid;
+                st = mid + 1;
+            }else{
+                end = mid - 1;
+            }
+        }
+
+        return ans;
+
+  }
+
+  //826. Most Profit Assigning Work
+  public int maxProfitAssignment(int[] difficulty, int[] profit, int[] worker) {
+
+        int n = profit.length, ans = 0, m = worker.length;
+        Work[] works = new Work[n];
+        int[] reProfits = new int[n];
+        int[] reDiffs = new int[n];
+        for(int i = 0; i < n ; i++){
+            works[i] = new Work(profit[i], difficulty[i], -1);
+        }
+        Arrays.sort(works, new Comparator<Work>() {
+            @Override
+            public int compare(Work o1, Work o2) {
+                return Integer.compare(o1.diff, o2.diff);
+            }
+        });
+      for(int i = 0; i < n ; i++){
+         reProfits[i] = works[i].profit;
+         reDiffs[i] = works[i].diff;
+      }
+
+      int[] maxArr = new int [n];
+      maxArr[0] = reProfits[0];
+      for(int i = 1 ; i < n ; i++){
+          maxArr[i] = Math.max(maxArr[i-1], reProfits[i]);
+      }
+
+      for(int i = 0; i < m ; i++){
+          int idx = bs(reDiffs, n, worker[i]);
+          if(idx != -1){
+              int maxProfit = maxArr[idx];
+              ans += maxProfit;
+          }
+      }
+      return ans;
+
+  }
+
 }
