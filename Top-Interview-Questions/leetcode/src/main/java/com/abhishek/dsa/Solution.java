@@ -549,4 +549,59 @@ public class Solution {
 
   }
 
+    static int modAdd(int a, int b, int m)
+    {
+        return ((a % m) + (b % m)) % m;
+    }
+
+    // Function to perform Modular Subtraction
+    static int modSub(int a, int b, int m)
+    {
+        return ((a % m) - (b % m) + m)
+                % m; // Adding m to handle negative numbers
+    }
+
+
+    public int minAbsoluteSumDiff(int[] nums1, int[] nums2) {
+
+        TreeSet<Integer> ts = new TreeSet<>();
+        int n = nums1.length;
+        for(int i = 0; i < n; i++){
+            ts.add(nums1[i]);
+        }
+        int ans = 0;
+        int mod = 1000000007;
+        int replaceIndex = -1, replaceVal = -1;
+        for(int i = 0; i < n; i++){
+            int nearest = nums1[i];
+            Integer floor = ts.floor(nums2[i]);
+            Integer ceil = ts.ceiling(nums2[i]);
+            if(floor != null && Math.abs(nearest - nums2[i]) > Math.abs(floor - nums2[i])){
+                nearest = floor;
+            }
+            if(ceil != null && Math.abs(nearest - nums2[i]) > Math.abs(ceil - nums2[i])){
+                nearest = ceil;
+            }
+            if(nearest != nums1[i] && replaceIndex == -1){
+                replaceIndex = i;
+                replaceVal = Math.abs(nums1[i] - nums2[i]) - Math.abs(nearest - nums2[i]);
+            }else if(nearest != nums1[i]){
+                if(replaceVal < (Math.abs(nums1[i] - nums2[i]) - Math.abs(nearest - nums2[i]))){
+                    replaceIndex = i;
+                    replaceVal = Math.abs(nums1[i] - nums2[i]) - Math.abs(nearest - nums2[i]);
+                }
+            }
+        }
+
+        for(int i = 0; i < n; i++){
+            if(i == replaceIndex){
+                ans = modAdd(ans, Math.abs(nums1[i] - nums2[i]) - replaceVal, mod);
+            }else{
+                ans = modAdd(ans, Math.abs(nums1[i] - nums2[i]), mod);
+            }
+        }
+
+        return ans;
+    }
+
 }
