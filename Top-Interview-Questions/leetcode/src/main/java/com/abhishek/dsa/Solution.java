@@ -604,4 +604,261 @@ public class Solution {
         return ans;
     }
 
+    public int trapRainWater(int[][] heightMap) {
+
+        int n = heightMap.length;
+        int m = heightMap[0].length;
+        int ans = 0;
+        if(n == 1 || n == 2 || m == 1 || m == 2) return ans;
+
+        int[][] heightMapDp = new int[n][m];
+        for(int i = 0; i < n; i++){
+            int [] arr = new int[m];
+            heightMapDp[i] = arr;
+        }
+
+        for(int i = 1; i <= n - 1; i++){
+            int prevMax = heightMap[i][0];
+            for(int j = 1; j <= m - 1; j++){
+                heightMapDp[i][j] = prevMax;
+                prevMax = Math.max(prevMax, heightMap[i][j]);
+            }
+        }
+
+        for(int i = 1; i <= n - 1; i++){
+            int prevMax = heightMap[i][n-1];
+            for(int j = m-2; j >= 0; j--){
+                heightMapDp[i][j] = Math.min(heightMapDp[i][j], prevMax);
+                prevMax = Math.max(prevMax, heightMap[i][j]);
+            }
+        }
+
+        for(int j = 1; j <= m - 1; j++){
+            int prevMax = heightMap[0][j];
+            for(int i = 1; i < n; i++){
+                heightMapDp[i][j] = Math.min(heightMapDp[i][j], prevMax);
+                prevMax = Math.max(prevMax, heightMap[i][j]);
+            }
+        }
+
+        for(int j = 1; j <= m - 1; j++){
+            int prevMax = heightMap[n-1][j];
+            for(int i = n-2; i >= 0; i--){
+                heightMapDp[i][j] = Math.min(heightMapDp[i][j], prevMax);
+                prevMax = Math.max(prevMax, heightMap[i][j]);
+            }
+        }
+
+        for(int i = 1; i < n - 1; i++){
+            for(int j = 1; j < m - 1; j++){
+                heightMapDp[i][j] = Math.min(heightMapDp[i][j], Math.min(heightMapDp[i-1][j], heightMapDp[i][j-1]));
+            }
+        }
+
+        for(int i = n-2; i > 0; i--){
+            for(int j = m-2; j > 0; j--){
+                heightMapDp[i][j] = Math.min(heightMapDp[i][j], Math.min(heightMapDp[i+1][j], heightMapDp[i][j+1]));
+            }
+        }
+
+        for(int i = 1; i < n - 1; i++){
+            for(int j = 1; j < m - 1; j++){
+                if(heightMap[i][j] < heightMapDp[i][j]){
+                    ans += (heightMapDp[i][j] - heightMap[i][j]);
+                }
+            }
+        }
+
+        return ans;
+
+    }
+
+    public int[] lexicographicallySmallestArray(int[] nums, int limit) {
+        int n = nums.length;
+        Map<Integer, Integer> groups = new HashMap<>();
+        Map<Integer, PriorityQueue<Integer>> groupsOrdered = new HashMap<>();
+        int ctr = 0;
+        int [] arr = Arrays.copyOf(nums, n);
+        Arrays.sort(arr);
+        groups.put(arr[0], ctr);
+        PriorityQueue<Integer> init = new PriorityQueue<>();
+        init.add(arr[0]);
+        groupsOrdered.put(ctr, init);
+        for(int i = 1; i < n; i++){
+            if(arr[i] - arr[i-1] <= limit){
+                groups.put(arr[i], ctr);
+                groupsOrdered.get(ctr).add(arr[i]);
+            }else{
+                ctr++;
+                groups.put(arr[i], ctr);
+                PriorityQueue<Integer> init2 = new PriorityQueue<>();
+                init2.add(arr[i]);
+                groupsOrdered.put(ctr, init2);
+            }
+        }
+
+        for(int i = 0
+            ; i < n; i++){
+            nums[i] = groupsOrdered.get(groups.get(nums[i])).poll();
+        }
+        return nums;
+    }
+
+    public class ListNode {
+      int val;
+     ListNode next;
+      ListNode() {}
+      ListNode(int val) { this.val = val; }
+      ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+  }
+
+    public ListNode deleteDuplicates(ListNode head) {
+
+        return deleteDuplicatesHelper(head, null);
+
+    }
+
+    public ListNode deleteDuplicatesHelper(ListNode head, ListNode prev) {
+
+        if(head == null ) return null;
+        boolean delCurrNode = false;
+        if(head.next != null && head.next.val == head.val){
+            delCurrNode = true;
+        }
+        ListNode makeRight = deleteDuplicatesHelper(head.next, head);
+        if((prev != null && head.val == prev.val) || delCurrNode){
+            return makeRight;
+        }
+        head.next = makeRight;
+        return head;
+    }
+
+    // check why this is wrong
+    public int findCircleNum(int[][] isConnected) {
+        int n = isConnected.length;
+        int gp = 0;
+        int[] dp = new int[n];
+
+        Arrays.fill(dp, -1);
+
+        for(int i = 0; i < n ; i++){
+            for(int j = 0; j < n; j++){
+                if( i != j && isConnected[i][j] == 1){
+                    if(dp[i] != -1 && dp[j] == -1){
+                        dp[i] = dp[j];
+                    }else if(dp[i] == -1 && dp[j] != -1){
+                        dp[j] = dp[i];
+                    }else if(dp[i] == -1 && dp[j] == -1){
+                        gp++;
+                        dp[i] = gp;
+                        dp[j] = gp;
+                    }else{
+                        if(dp[i] != dp [j]){
+                            for(int k = 0; k < n; k++){
+                                if(dp[k] == dp[j]){
+                                    dp[k] = dp[i];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(dp[i] == -1){
+                gp++;
+                dp[i] = gp;
+            }
+        }
+
+        Set<Integer> groups = new HashSet<>();
+        for(int i = 0; i < n; i++){
+            groups.add(dp[i]);
+        }
+
+        return groups.size();
+    }
+
+    public int findCircleNum2(int[][] isConnected) {
+        int n = isConnected.length;
+        int gp = 0;
+        int[] visited = new int[n];
+
+        Arrays.fill(visited, -1);
+
+        for(int i = 0; i < n ; i++){
+            if(visited[i] == -1){
+                gp++;
+                dfsProvinces(visited, i, isConnected);
+            }
+        }
+
+        return gp;
+
+    }
+
+    private void dfsProvinces(int[] visited, int node, int[][] isConnected){
+        visited[node] = 1;
+        for(int j = 0; j < visited.length; j++){
+            if(node != j && isConnected[node][j] == 1 && visited[j] != -1){
+                dfsProvinces(visited, j, isConnected);
+            }
+        }
+    }
+
+    public int minTaps(int n, int[] ranges) {
+
+        int[] dp = new int[n];
+        dp[n-1] = 0;
+
+        for(int i = 1; i < n ; i++){
+            int left = Math.max(0, i - ranges[i]);
+            ranges[left] = Math.max(ranges[left], i + ranges[i] - left);
+        }
+
+        for(int i = n - 2; i>= 0; i--){
+            int minAns = -1;
+            for(int j = 1; i + j <= Math.min(n - 1, ranges[i]) ; j++){
+                minAns = Math.min(minAns, 1 + dp[i + j]);
+            }
+            dp[i] = minAns;
+        }
+
+        return dp[0];
+
+    }
+
+    public String smallestEquivalentString(String s1, String s2, String baseStr) {
+
+        int[] dp = new int[26];
+        int n = s1.length(), m = baseStr.length();
+        StringBuilder ans = new StringBuilder();
+        for(int i = 0; i < dp.length; i++){
+            dp[i] = i + 97;
+        }
+
+        for(int i = 0; i < n; i++){
+            char c1 = s1.charAt(i);
+            char c2 = s2.charAt(i);
+            if(dp[c1 - 97] < dp[c2 - 97]){
+                helperSmallestEquivalentString(dp, c2, c1);
+            }else{
+                helperSmallestEquivalentString(dp, c1, c2);
+            }
+        }
+
+        for(int i = 0; i < m; i++){
+           ans.append((char) dp[baseStr.charAt(i) - 97]);
+        }
+
+        return ans.toString();
+    }
+
+    private void helperSmallestEquivalentString(int[] dp, char oldC, char newC){
+        for(int i = 0; i < 26; i++){
+            if(i != oldC - 97 && dp[i] == dp[oldC - 97]) dp[i] = dp[newC - 97];
+        }
+        dp[oldC - 97] = dp[newC - 97];
+    }
+
 }
+
+
