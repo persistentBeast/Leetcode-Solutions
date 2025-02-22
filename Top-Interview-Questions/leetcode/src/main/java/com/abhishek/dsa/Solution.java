@@ -1,6 +1,7 @@
 package com.abhishek.dsa;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Solution {
 
@@ -857,6 +858,141 @@ public class Solution {
             if(i != oldC - 97 && dp[i] == dp[oldC - 97]) dp[i] = dp[newC - 97];
         }
         dp[oldC - 97] = dp[newC - 97];
+    }
+
+    public int minInsertions(String s) {
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        for(int i = 0; i<n; i++){
+            for(int j = 0; j < n; j++){
+                dp[i][j] =-1;
+            }
+        }
+
+        return minInsertionsHelper(dp, 0, n - 1, s);
+
+    }
+
+    public int minInsertionsHelper(int[][]dp, int i, int j, String s) {
+        if(dp[i][j] != -1) return dp[i][j];
+
+        if(i == j){
+            dp[i][j] = 0;
+            return 0;
+        }
+
+        if(s.charAt(i) == s.charAt(j)){
+            dp[i][j] = minInsertionsHelper(dp, i+1, j-1,s);
+        }else{
+            dp[i][j] = 1 + Math.min(minInsertionsHelper(dp, i+1, j,s), minInsertionsHelper(dp, i, j - 1,s));
+        }
+
+        return dp[i][j];
+
+    }
+
+    public int strangePrinter(String s) {
+        StringBuilder sanitised = new StringBuilder();
+        int n = s.length();
+        sanitised.append(s.charAt(0));
+
+        for(int i = 1; i < n; i++){
+            if(s.charAt(i) != s.charAt(i - 1)){
+                sanitised.append(s.charAt(i));
+            }
+        }
+
+        String S = sanitised.toString();
+        int m = S.length();
+
+        int[][] dp = new int[m][m];
+        for(int i = 0; i<m; i++){
+            for(int j = 0; j < m; j++){
+                dp[i][j] = -1;
+            }
+        }
+
+        return strangePrinterHelper(dp, 0, m - 1, S);
+    }
+
+    public int strangePrinterHelper(int[][]dp, int i, int j, String s) {
+        if(i > j){
+            return 0;
+        }
+
+        if(dp[i][j] != -1) return dp[i][j];
+
+        int minTurns = 1 + strangePrinterHelper(dp, i + 1, j, s);
+
+        for(int k = i + 1; k <= j; k++){
+            if(s.charAt(k) == s.charAt(i)){
+                minTurns = Math.min(minTurns, strangePrinterHelper(dp, i, k - 1, s) + strangePrinterHelper(dp, k + 1, j, s));
+            }
+        }
+
+        return dp[i][j] = minTurns;
+
+    }
+
+    public int uniqueLetterString(String s) {
+
+        int n = s.length();
+        int ans = 0;
+        Map<Integer, List<Integer>> occr = new HashMap<>();
+
+        for(int i = 0; i < n; i++){
+            char c1 = s.charAt(i);
+            if(occr.containsKey((int) c1)){
+                occr.get((int) c1).add(i);
+            }else{
+                List<Integer> newL = new ArrayList<>();
+                newL.add(i);
+                occr.put((int) c1, newL);
+            }
+        }
+
+        for(List<Integer> arr : occr.values()){
+            for(int i = 0; i < arr.size(); i++){
+                int prev = i == 0 ? -1 : arr.get(i-1);
+                int next = i == arr.size() -1 ? n-1 : arr.get(i + 1);
+                ans += (arr.get(i) - prev + 1) * (next - arr.get(i));
+            }
+        }
+
+        return ans;
+    }
+
+    public int numSubmatrixSumTarget(int[][] matrix, int target) {
+        int n = matrix.length, m = matrix[0].length;
+        int ans = 0;
+
+        for(int k = n; k > 0; k--){
+            int [][] prefixSum = new int[k][m];
+            prefixSum[k-1][0] = matrix[k-1][0];
+
+            for(int i = k - 1; i >= 0; i--){
+                Map<Integer, Integer> lastSeen = new HashMap<>();
+                lastSeen.put(0, 1);
+                for(int j = 0; j < m; j++){
+                    if(j == 0){
+                        if(i == k - 1){
+                            prefixSum[i][j] = matrix[i][j];
+                        }else{
+                            prefixSum[i][j] = matrix[i][j] + prefixSum[i+1][j];
+                        }
+                    }else{
+                        if( i == k - 1){
+                            prefixSum[i][j] = matrix[i][j] + prefixSum[i][j-1];
+                        }else{
+                            prefixSum[i][j] = matrix[i][j] + prefixSum[i+1][j] + prefixSum[i][j-1] - prefixSum[i + 1][j-1];
+                        }
+                    }
+                    ans += lastSeen.getOrDefault(prefixSum[i][j] - target, 0);
+                    lastSeen.put(prefixSum[i][j], lastSeen.getOrDefault(prefixSum[i][j], 0) + 1);
+                }
+            }
+        }
+        return ans;
     }
 
 }
