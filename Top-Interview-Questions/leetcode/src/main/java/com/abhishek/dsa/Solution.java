@@ -1,6 +1,7 @@
 package com.abhishek.dsa;
 
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Solution {
@@ -994,6 +995,30 @@ public class Solution {
         }
         return ans;
     }
+
+    public int[] canSeePersonsCount(int[] heights) {
+
+        int n = heights.length;
+        Stack<Pair> st= new Stack<>();
+        int[] ans = new int[n];
+        ans[n-1] = 0;
+        st.add(new Pair(heights[n-1], n - 1));
+
+        for(int i = n - 2; i >= 0; i--){
+
+            int myAns = 0;
+            while(!st.empty() && st.peek().l <= heights[i]){
+                st.pop();
+                myAns++;
+            }
+
+            ans[i] = myAns + (st.isEmpty() ? 0 : 1);
+            st.add(new Pair(heights[i], i));
+        }
+
+        return ans;
+    }
+
 
 }
 
