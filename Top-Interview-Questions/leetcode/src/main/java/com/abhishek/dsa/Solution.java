@@ -1,7 +1,7 @@
 package com.abhishek.dsa;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Solution {
@@ -1017,6 +1017,321 @@ public class Solution {
         }
 
         return ans;
+    }
+
+    //1494. Parallel Courses II
+    public int minNumberOfSemesters(int n, int[][] relations, int k) {
+
+        boolean[][] inDegree = new boolean[n+1][n+1];
+
+        for (int[] relation : relations) {
+            addDegree(inDegree, relation[0], relation[1]);
+        }
+
+    return minNumberOfSemestersHelper(n, inDegree, k, new BitSet(n), 0, new HashMap<>());
+    }
+
+    public int minNumberOfSemestersHelper(int n, boolean[][] inDegree, int k,  BitSet bitmask, int curr, Map<String, Integer> dp){
+
+        if(bitmask.cardinality() == n) return 0;
+
+        if(curr == k){
+            return 1 + minNumberOfSemestersHelper(n, inDegree, k, bitmask, 0, dp);
+        }
+
+        String key = bitmask.toString() + "_" + curr;
+
+        if(dp.get(key) != null){
+            return dp.get(key);
+        }
+
+        int min_ans = Integer.MAX_VALUE;
+        for(int i = 1; i <= n; i++){
+            if(!hasInDegree(inDegree, i, n) && !bitmask.get(i - 1)){
+                List<Integer> nodes = new ArrayList<>();
+                for(int j = 1; j <= n; j++){
+                    if(j != i && inDegree[i][j]){
+                        nodes.add(j);
+                        removeDegree(inDegree, i, j);
+                    }
+                }
+                bitmask.set(i - 1);
+                int temp = minNumberOfSemestersHelper(n, inDegree, k, bitmask, curr + 1, dp);
+                bitmask.clear(i - 1);
+                min_ans = Math.min(min_ans, temp);
+                for(Integer node : nodes){
+                    addDegree(inDegree, i, node);
+                }
+            }
+        }
+
+        dp.put(key, min_ans);
+
+        return min_ans;
+    }
+
+
+    private boolean hasInDegree(boolean[][] inDegree, int node, int n){
+        for(int i = 1; i <= n; i++){
+            if(inDegree[i][node]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void removeDegree(boolean[][] inDegree, int A, int B){
+        inDegree[A][B] = false;
+    }
+
+    private void addDegree(boolean[][] inDegree, int A, int B){
+        inDegree[A][B] = true;
+    }
+
+    public int racecar(int target) {
+        return racecarHelper(0, 1, target, new HashMap<>(), 0);
+
+    }
+
+    public int racecarHelper(int pos, int speed, int target, Map<String, Integer> dp, int last){
+        if(pos >= target) return 0;
+
+        if(pos < 0) return Integer.MAX_VALUE;
+
+        String key = pos + "_" + speed + "_" + last;
+
+        if(dp.containsKey(key)) return dp.get(key);
+
+        int c1 = 1 + racecarHelper(pos + speed, speed * 2, target, dp, 0);
+
+        int c2 = Integer.MAX_VALUE;
+
+        if(last != 1) c2 = 1 + racecarHelper(pos, speed > 0 ? -1 : 1, target, dp, 1);
+
+        dp.put(key, Math.min(c1, c2));
+
+        return dp.get(key);
+
+    }
+
+    public int countCompleteComponents(int n, int[][] edges) {
+
+        int[] parent = new int[n];
+        int m = edges.length;
+
+        for(int i = 0; i < n; i++) parent[i] = i;
+
+        for(int i = 0; i < m; i++){
+            addEdge(edges[i][0], edges[i][1], parent);
+        }
+
+        return getTotalCompleteComponents(parent, edges);
+    }
+
+    public void addEdge(int a, int b, int[] parent){
+        int parentB = parent[b];
+        for(int i = 0; i < parent.length ; i++){
+            if(parent[i] == parentB){
+                parent[i] = parent[a];
+            }
+        }
+    }
+
+    public int getTotalComponents(int[] parent){
+        Set<Integer> nodes = new HashSet<>();
+        for (int i = 0; i < parent.length; i++) {
+            nodes.add(parent[i]);
+        }
+        return nodes.size();
+    }
+
+    public int getTotalCompleteComponents(int[] parent, int[][] edges){
+        Map<Integer, Integer> componentSize = new HashMap<>();
+        Map<Integer, Integer> componentedges = new HashMap<>();
+        AtomicInteger ans = new AtomicInteger();
+        for (int i = 0; i < edges.length; i++) {
+            int node = edges[i][0];
+            componentedges.put(parent[node], componentedges.getOrDefault(parent[node], 0) + 1);
+        }
+        for (int i = 0; i < parent.length; i++) {
+            componentSize.put(parent[i], componentSize.getOrDefault(parent[i], 0) + 1);
+        }
+        componentSize.forEach((k, v) -> {
+            if(componentedges.getOrDefault(k, 0) == (v*(v-1)/2)){
+                ans.getAndIncrement();
+            }
+        });
+
+        return ans.get();
+    }
+
+
+    public int minMalwareSpread(int[][] graph, int[] initial) {
+
+        int n = graph.length;
+        int[] parent = new int[n];
+
+        for(int i = 0; i < n; i++){
+            parent[i] = i;
+        }
+
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(i != j && graph[i][j] == 1){
+                    addEdge(i, j, parent);
+                }
+            }
+        }
+
+        Map<Integer, Integer> connectedComponents = new HashMap<>();
+
+        for(int i = 0; i < n; i++){
+            connectedComponents.put(parent[i], connectedComponents.getOrDefault(parent[i], 0) + 1);
+        }
+
+        Map<Integer, Integer> infectedComponents = new HashMap<>();
+        int ans = -1; int ansMax = Integer.MIN_VALUE; int minNum = Integer.MAX_VALUE;
+        for(int i = 0; i < initial.length; i++){
+            infectedComponents.put(parent[initial[i]], infectedComponents.getOrDefault(parent[initial[i]], 0) + 1);
+        }
+        for(int i = 0; i < initial.length; i++){
+            if(infectedComponents.get(parent[initial[i]]) == 1){
+                if(ansMax < connectedComponents.get(parent[initial[i]])){
+                    ans = initial[i];
+                    ansMax = connectedComponents.get(parent[initial[i]]);
+                }else if(ansMax == connectedComponents.get(parent[initial[i]]) && initial[i] < ans){
+                    ans = initial[i];
+                }
+            }
+            minNum = Math.min(minNum, initial[i]);
+        }
+
+        return ans == -1 ? minNum : ans;
+    }
+
+//    public int[] sortItems(int n, int m, int[] group, List<List<Integer>> beforeItems) {
+//
+//        Map<String, Map<String, Boolean>> adjMaps = new HashMap<>();
+//        Map<Integer, String> nodeToGroupMapping = new HashMap<>();
+//        Map<String, List<Integer>> groupToNodesMapping = new HashMap<>();
+//
+//        for(int  i = 0; i < m; i++){
+//            if(group[i] == -1){
+//                nodeToGroupMapping.put(i, "-1::" + i);
+//                if(groupToNodesMapping.containsKey("-1::" + i)){
+//                    groupToNodesMapping.get("-1::" + i).add(i);
+//                }else{
+//                    List<Integer> init = new ArrayList<>();
+//                    init.add(i);
+//                    groupToNodesMapping.put("-1::" + i, init);
+//                }
+//            }else{
+//                nodeToGroupMapping.put(i, String.valueOf(group[i]));
+//                if(groupToNodesMapping.containsKey(String.valueOf(group[i]))){
+//                    groupToNodesMapping.get(String.valueOf(group[i])).add(i);
+//                }else{
+//                    List<Integer> init = new ArrayList<>();
+//                    init.add(i);
+//                    groupToNodesMapping.put(String.valueOf(group[i]), init);
+//                }
+//            }
+//        }
+//
+//        for(int i = 0; i < beforeItems.size(); i++){
+//            String groupName = nodeToGroupMapping.get(i);
+//            Map<String, Boolean> adjMap = new HashMap<>();
+//            for(Integer beforeItem: beforeItems.get(i)){
+//                adjMap.put(nodeToGroupMapping.get(beforeItem), true);
+//            }
+//            adjMaps.put(groupName, adjMap);
+//        }
+//
+//        int V = adjMaps.size();
+//        int index = 0;
+//        String[] groupsTopologicalSorted = new String[V];
+//        Queue<String> q = new LinkedBlockingQueue<>();
+//
+//        for(Map.Entry<String, Map<String, Boolean>> e: adjMaps.entrySet()){
+//            if(e.getValue().isEmpty()){
+//                q.add(e.getKey());
+//            }
+//        }
+//
+//        while (!q.isEmpty()) {
+//            String node = q.poll();
+//            groupsTopologicalSorted[index++] = node;
+//
+//            for (String neighbor : adj[node]) {
+//                indegree[neighbor]--;
+//                if (indegree[neighbor] == 0) {
+//                    q.offer(neighbor);
+//                }
+//            }
+//        }
+//
+//
+//
+//    }
+
+
+    public int mergeStones(int[] stones, int k) {
+
+        int n = stones.length;
+        int ans = 0;
+
+        while(stones.length != 1){
+            List<Integer> minSub = minValueSubArrayOfKSize(stones, k);
+            if(minSub == null) return -1;
+            ans += minSub.getLast();
+            stones = merge(stones, minSub.getFirst(), minSub.get(1));
+        }
+
+        return ans;
+    }
+
+    public int[] merge(int[] stones, int a, int b) {
+
+        int[] merged = new int[stones.length - (b - a)];
+        int newEle = 0;
+        for(int i = a; i <= b; i++){
+            newEle += stones[i];
+        }
+
+        for(int i = 0; i < stones.length; i++){
+            if(i == a){
+                merged[i] = newEle;
+            }
+            if(i < a){
+                merged[i] = stones[i];
+            }
+            if(i > b){
+                merged[i - (b - a)] = stones[i];
+            }
+        }
+
+        return merged;
+    }
+
+    public List<Integer> minValueSubArrayOfKSize(int[] nums, int k){
+
+        if(nums.length < k) return null;
+        int currSum = 0, a = 0, b = k - 1;
+        for(int i = 0; i < k; i++){
+            currSum += nums[i];
+        }
+        int currSum2 = currSum;
+        for(int i = k; i < nums.length; i++){
+            currSum2 -= nums[i-k];
+            currSum2 += nums[i];
+
+            if(currSum2 < currSum){
+                currSum = currSum2;
+                a = i - k + 1;
+                b = i;
+            }
+        }
+        return List.of(a,b,currSum);
     }
 
 
